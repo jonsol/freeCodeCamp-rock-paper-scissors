@@ -27,7 +27,7 @@ def player(prev_play, opponent_history=[], my_history=[],
         my_prev_play + "R",
         my_prev_play + "P",
         my_prev_play + "S"
-    ]
+    ]git push --set-upstream origin
 
     sub_order = {
         k : play_order[0][k] for k in potential_plays if k in play_order[0]
