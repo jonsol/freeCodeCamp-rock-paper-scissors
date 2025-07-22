@@ -1,23 +1,26 @@
 import random
 
 def player(prev_play, opponent_history=[], my_history=[]):
-    # Add to opponent history
     if prev_play:
         opponent_history.append(prev_play)
 
-    # Add to your own move history
     if hasattr(player, "last_move"):
         my_history.append(player.last_move)
 
     if not hasattr(player, "patterns"):
         player.patterns = {}
 
+    if not hasattr(player, "reactive_mode"):
+        player.reactive_mode = False
+        player.reactive_count = 0
+
+    patterns = player.patterns
+
     if len(opponent_history) < 3:
         guess = random.choice(["R", "P", "S"])
         player.last_move = guess
         return guess
 
-    patterns = player.patterns
     last_two = "".join(opponent_history[-2:])
 
     if last_two not in patterns:
@@ -34,13 +37,21 @@ def player(prev_play, opponent_history=[], my_history=[]):
     counter_moves = {"R": "P", "P": "S", "S": "R"}
     guess = counter_moves[prediction]
 
-    # Try to detect if we are losing to a reactive bot like abbey
-    if len(my_history) >= 1:
-        # If opponent's last move beats our last move a lot, switch!
-        counter = {"R": "S", "P": "R", "S": "P"}
-        if opponent_history[-1] == counter[my_history[-1]]:
-            # They are countering us! So flip the guess
-            guess = counter_moves[guess]
+    # Detect reactive bot
+    if len(my_history) >= 10:
+        counter = {"R": "P", "P": "S", "S": "R"}
+        beaten = sum(1 for my, opp in zip(my_history[-10:], opponent_history[-10:]) if opp == counter[my])
+
+        if beaten >= 7:
+            # Switch to random for next few rounds to break Abbey
+            player.reactive_mode = True
+            player.reactive_count = 5
+
+    if player.reactive_mode:
+        guess = random.choice(["R", "P", "S"])
+        player.reactive_count -= 1
+        if player.reactive_count <= 0:
+            player.reactive_mode = False
 
     player.last_move = guess
     return guess
