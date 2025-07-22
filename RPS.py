@@ -1,26 +1,26 @@
 import random
 
 def player(prev_play, opponent_history=[], my_history=[]):
+    # Store opponent play
     if prev_play:
         opponent_history.append(prev_play)
 
+    # Store own last move
     if hasattr(player, "last_move"):
         my_history.append(player.last_move)
 
     if not hasattr(player, "patterns"):
         player.patterns = {}
 
-    if not hasattr(player, "reactive_mode"):
-        player.reactive_mode = False
-        player.reactive_count = 0
-
     patterns = player.patterns
 
+    # Random for first few rounds
     if len(opponent_history) < 3:
         guess = random.choice(["R", "P", "S"])
         player.last_move = guess
         return guess
 
+    # Markov chain prediction
     last_two = "".join(opponent_history[-2:])
 
     if last_two not in patterns:
@@ -37,21 +37,19 @@ def player(prev_play, opponent_history=[], my_history=[]):
     counter_moves = {"R": "P", "P": "S", "S": "R"}
     guess = counter_moves[prediction]
 
-    # Detect reactive bot
-    if len(my_history) >= 10:
+    # 🔍 Detect reactive bot like Abbey
+    if len(my_history) >= 5:
+        # Count how many times opponent beats my last move
         counter = {"R": "P", "P": "S", "S": "R"}
-        beaten = sum(1 for my, opp in zip(my_history[-10:], opponent_history[-10:]) if opp == counter[my])
+        beaten = 0
+        for my, opp in zip(my_history[-5:], opponent_history[-5:]):
+            if opp == counter[my]:
+                beaten += 1
 
-        if beaten >= 7:
-            # Switch to random for next few rounds to break Abbey
-            player.reactive_mode = True
-            player.reactive_count = 5
-
-    if player.reactive_mode:
-        guess = random.choice(["R", "P", "S"])
-        player.reactive_count -= 1
-        if player.reactive_count <= 0:
-            player.reactive_mode = False
+        if beaten >= 4:
+            # They are clearly reacting → switch strategy
+            counter_to_my_last = {"R": "S", "P": "R", "S": "P"}
+            guess = counter_to_my_last[my_history[-1]]
 
     player.last_move = guess
     return guess
