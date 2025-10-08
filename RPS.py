@@ -1,10 +1,53 @@
-# The example function below keeps track of the opponent's history and plays whatever the opponent played two plays ago. It is not a very good player so you will need to change the code to pass the challenge.
+from itertools import product
+import random
 
-def player(prev_play, opponent_history=[]):
-    opponent_history.append(prev_play)
+# Copy Abbey as she is a 2nd order markov chain algorithm and change it to 3rd order markov with decaying factor
+def player(
+    prev_opponent_play,
+    opponent_history=[],
+    play_order=[{}],
+    decay_rate=0.99  # how quickly old data fades (closer to 1 = slower decay)
+):
 
-    guess = "R"
-    if len(opponent_history) > 2:
-        guess = opponent_history[-2]
+    if not prev_opponent_play:
+        prev_opponent_play = 'S'
 
-    return guess
+    # Add to history
+    opponent_history.append(prev_opponent_play)
+
+    #Play order for 3rd order
+    if not play_order[0]:
+        moves = ['R', 'P', 'S']
+        for seq in product(moves, repeat=4):
+            play_order[0]["".join(seq)] = 0.0
+
+    # Apply decay to all counts
+    for k in play_order[0]:
+        play_order[0][k] *= decay_rate
+
+    # Update transition table if enough history
+    if len(opponent_history) > 3:
+        last_four = "".join(opponent_history[-4:])
+        play_order[0][last_four] += 1
+
+    # Get last 3 moves as the current state
+    if len(opponent_history) >= 3:
+        last_three = "".join(opponent_history[-3:])
+    else:
+        return random.choice(['R', 'P', 'S'])
+
+    # Possible next moves from this state
+    #potential_plays = [last_three + "R", last_three + "P", last_three + "S"]
+    potential_plays = [last_three + nxt for nxt in ['R', 'P', 'S']]
+    #potential_plays = [last_two + "R", last_two + "P", last_two + "S"]
+    sub_order = {k: play_order[0][k] for k in potential_plays}
+
+    # Predict opponent's next move = the one with highest decayed frequency
+    prediction = max(sub_order, key=sub_order.get)[-1]
+
+    # Choose counter move
+    ideal_response = {'P': 'S', 'R': 'P', 'S': 'R'}
+    return ideal_response[prediction]
+
+
+
