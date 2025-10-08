@@ -6,7 +6,7 @@ def player(
     prev_opponent_play,
     opponent_history=[],
     play_order=[{}],
-    decay_rate=0.99  # how quickly old data fades (closer to 1 = slower decay)
+    decay_rate=0.99
 ):
 
     if not prev_opponent_play:
@@ -37,9 +37,7 @@ def player(
         return random.choice(['R', 'P', 'S'])
 
     # Possible next moves from this state
-    #potential_plays = [last_three + "R", last_three + "P", last_three + "S"]
-    potential_plays = [last_three + nxt for nxt in ['R', 'P', 'S']]
-    #potential_plays = [last_two + "R", last_two + "P", last_two + "S"]
+    potential_plays = [last_three + "R", last_three + "P", last_three + "S"]
     sub_order = {k: play_order[0][k] for k in potential_plays}
 
     # Predict opponent's next move = the one with highest decayed frequency
