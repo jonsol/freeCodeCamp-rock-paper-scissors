@@ -1,7 +1,4 @@
-# This entrypoint file to be used in development. Start by reading README.md
 from RPS_game import play, mrugesh, abbey, quincy, kris, human, random_player
-from RPS import player
-from unittest import main
 from itertools import product
 import random
 
@@ -26,7 +23,7 @@ def player_1(
     # Add to history
     opponent_history.append(prev_opponent_play)
 
-    #Play order for 3rd order
+    #Play order for 3rd order (81 sequences)
     if not play_order[0]:
         moves = ['R', 'P', 'S']
         for seq in product(moves, repeat=4):

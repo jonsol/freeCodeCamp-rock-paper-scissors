@@ -15,7 +15,7 @@ def player(
     # Add to history
     opponent_history.append(prev_opponent_play)
 
-    #Play order for 3rd order
+    #Play order for 3rd order (81 sequences)
     if not play_order[0]:
         moves = ['R', 'P', 'S']
         for seq in product(moves, repeat=4):
